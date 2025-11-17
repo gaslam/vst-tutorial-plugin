@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PluginProcessor.h"
+#include "TestPlugin/Square.h"
 
 namespace audio_plugin {
 
@@ -13,6 +14,7 @@ public:
   void resized() override;
 
 private:
+  Square square;
   // This reference is provided as a quick way for your editor to
   // access the processor object that created it.
   AudioPluginAudioProcessor& processorRef;
