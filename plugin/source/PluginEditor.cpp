@@ -8,25 +8,19 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor(
   juce::ignoreUnused(processorRef);
   // Make sure that before the constructor has finished, you've set the
   // editor's size to whatever you need it to be.
-  setSize(400, 300);
+  setSize(400, 600);
+  addAndMakeVisible(square);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor() {}
 
-void AudioPluginAudioProcessorEditor::paint(juce::Graphics& g) {
-  // (Our component is opaque, so we must completely fill the background with a
-  // solid colour)
-  g.fillAll(
-      getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
+void AudioPluginAudioProcessorEditor::paint(juce::Graphics&) {
 
-  g.setColour(juce::Colours::white);
-  g.setFont(15.0f);
-  g.drawFittedText("Hello World!", getLocalBounds(),
-                   juce::Justification::centred, 1);
 }
 
 void AudioPluginAudioProcessorEditor::resized() {
   // This is generally where you'll want to lay out the positions of any
   // subcomponents in your editor..
+  square.setBounds(100, 100, 200, 200);
 }
 }  // namespace audio_plugin
