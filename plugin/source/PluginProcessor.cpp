@@ -77,6 +77,10 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate,
   // Use this method as the place to do any pre-playback
   // initialisation that you need..
   juce::ignoreUnused(sampleRate, samplesPerBlock);
+  m_Sinewaves.resize(getTotalNumInputChannels());
+  for (auto& wave : m_Sinewaves) {
+    wave.prepare(sampleRate);
+  }
 }
 
 void AudioPluginAudioProcessor::releaseResources() {
@@ -115,6 +119,8 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
   juce::ScopedNoDenormals noDenormals;
   auto totalNumInputChannels = getTotalNumInputChannels();
   auto totalNumOutputChannels = getTotalNumOutputChannels();
+  const int bufferChannels = buffer.getNumChannels();
+  const int bufferSamples = buffer.getNumSamples();
 
   // In case we have more outputs than inputs, this code clears any output
   // channels that didn't contain input data, (because these aren't
@@ -124,6 +130,11 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
   // this code if your algorithm always overwrites all the output channels.
   for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
     buffer.clear(i, 0, buffer.getNumSamples());
+
+  for (int channel{}; channel < bufferChannels; ++channel) {
+    float* output = buffer.getWritePointer(channel);
+    m_Sinewaves[channel].process(output,bufferSamples);
+  }
 
   // This is the place where you'd normally do the guts of your plugin's
   // audio processing...
