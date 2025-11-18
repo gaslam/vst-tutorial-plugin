@@ -1,5 +1,7 @@
 #pragma once
 
+#include "TestPlugin/Squarewave.h"
+
 #include <juce_audio_processors/juce_audio_processors.h>
 
 namespace audio_plugin {
@@ -36,6 +38,9 @@ public:
   void setStateInformation(const void* data, int sizeInBytes) override;
 
 private:
+
+  std::vector<Squarewave> m_Squarewaves{};
+
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)
 };
 }  // namespace audio_plugin
