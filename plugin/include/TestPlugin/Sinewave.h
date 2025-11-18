@@ -15,7 +15,7 @@ class Sinewave {
   float m_Amplitude = 0.2f;
   float m_Frequency = 440.0f;
   float m_CurrentSampleRate = 0.0f;
-  float m_TimeIncrement = 0.0f;
+  float m_TimeIncrement = 0.1f;
   float m_CurrentTime{};
 
 };

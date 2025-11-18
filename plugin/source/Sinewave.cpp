@@ -1,4 +1,4 @@
-﻿#include "TestPlugin/SinewaveChannel.h"
+﻿#include "TestPlugin/Sinewave.h"
 #include <numbers>
 #include <cmath>
 
