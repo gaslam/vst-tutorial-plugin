@@ -36,13 +36,15 @@ set(SOURCE_FILES
         source/PluginEditor.cpp
         source/PluginProcessor.cpp
         source/Square.cpp
-        source/SinewaveChannel.cpp)
+        source/Sinewave.cpp
+        source/Squarewave.cpp)
 # Optional; includes header files in the project file tree in Visual Studio
 set(HEADER_FILES
         ${INCLUDE_DIR}/PluginEditor.h
         ${INCLUDE_DIR}/PluginProcessor.h
         ${INCLUDE_DIR}/Square.h
-        ${INCLUDE_DIR}/SinewaveChannel.h)
+        ${INCLUDE_DIR}/Sinewave.h
+        ${INCLUDE_DIR}/Squarewave.h)
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES} ${HEADER_FILES})
 
 # Sets the include directories of the plugin project.
