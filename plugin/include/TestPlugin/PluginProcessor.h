@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TestPlugin/SinewaveChannel.h"
+#include "TestPlugin/Squarewave.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
@@ -39,7 +39,7 @@ public:
 
 private:
 
-  std::vector<Sinewave> m_Sinewaves{};
+  std::vector<Squarewave> m_Squarewaves{};
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)
 };
