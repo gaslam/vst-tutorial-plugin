@@ -11,10 +11,15 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
 #endif
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-      ) {
+      ),m_State(*this,nullptr,"parameters",createParameters()) {
+  m_State.addParameterListener("play",this);
+  m_State.addParameterListener("freqHz",this);
 }
 
-AudioPluginAudioProcessor::~AudioPluginAudioProcessor() {}
+AudioPluginAudioProcessor::~AudioPluginAudioProcessor() {
+  m_State.removeParameterListener("freqHz",this);
+  m_State.removeParameterListener("play",this);
+}
 
 const juce::String AudioPluginAudioProcessor::getName() const {
   return JucePlugin_Name;
@@ -116,6 +121,10 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                                              juce::MidiBuffer& midiMessages) {
   juce::ignoreUnused(midiMessages);
 
+  if (!m_IsPlaying) {
+    return;
+  }
+
   juce::ScopedNoDenormals noDenormals;
   auto totalNumInputChannels = getTotalNumInputChannels();
   auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -172,10 +181,39 @@ void AudioPluginAudioProcessor::setStateInformation(const void* data,
   // call.
   juce::ignoreUnused(data, sizeInBytes);
 }
+juce::AudioProcessorValueTreeState::ParameterLayout
+AudioPluginAudioProcessor::createParameters() {
+  return
+  {
+    std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"freqHz"},"Frequency",20.f,2000.f,220.f),
+    std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"play"},"Play",true)
+  };
+}
 }  // namespace audio_plugin
 
 // This creates new instances of the plugin.
 // This function definition must be in the global namespace.
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() {
   return new audio_plugin::AudioPluginAudioProcessor();
+}
+
+void audio_plugin::AudioPluginAudioProcessor::parameterChanged(
+    const juce::String& id,
+    float newValue) {
+
+  if (id == "play") {
+    const float newFreq = 0.4f * newValue;
+
+    for (auto& wave : m_Squarewaves) {
+      wave.setAmplitude(newFreq);
+    }
+
+    m_IsPlaying = !m_IsPlaying;
+  }
+
+  if (id == "freqHz") {
+    for (auto& wave : m_Squarewaves) {
+      wave.setFrequency(newValue);
+    }
+  }
 }

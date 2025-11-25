@@ -1,11 +1,11 @@
 #pragma once
 
-#include "TestPlugin/Squarewave.h"
+#include "TestPlugin/Sinewave.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
 namespace audio_plugin {
-class AudioPluginAudioProcessor : public juce::AudioProcessor {
+class AudioPluginAudioProcessor : public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener {
 public:
   AudioPluginAudioProcessor();
   ~AudioPluginAudioProcessor() override;
@@ -37,9 +37,18 @@ public:
   void getStateInformation(juce::MemoryBlock& destData) override;
   void setStateInformation(const void* data, int sizeInBytes) override;
 
+  void parameterChanged(const juce::String& id, float newValue) override;
+
+  [[nodiscard]] juce::AudioProcessorValueTreeState& getState() {return m_State;}
+  bool IsPlaying() const {return m_IsPlaying;};
+
 private:
 
-  std::vector<Squarewave> m_Squarewaves{};
+  std::vector<Sinewave> m_Squarewaves{};
+  juce::AudioProcessorValueTreeState m_State;
+  bool m_IsPlaying = true;
+
+  juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)
 };
