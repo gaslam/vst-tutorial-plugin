@@ -1,6 +1,6 @@
 ﻿#ifndef SINEWAVE_H
 #define SINEWAVE_H
-#include "wave.h"
+#include "Wave.h"
 
 class Sinewave : public Wave{
   public:

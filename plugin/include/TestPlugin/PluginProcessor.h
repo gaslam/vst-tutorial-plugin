@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TestPlugin/Squarewave.h"
+#include "TestPlugin/Wave.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <map>
@@ -51,7 +51,7 @@ private:
   bool m_IsPlaying = true;
 
   juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
-  std::vector<std::unique_ptr<Wave>> initWavesByName(const juce::String& name,const int resizeNr, const float sampleRate) ;
+  std::vector<std::unique_ptr<Wave>> initWavesByName(const juce::String& name,const size_t resizeNr, const float sampleRate) ;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)
 };

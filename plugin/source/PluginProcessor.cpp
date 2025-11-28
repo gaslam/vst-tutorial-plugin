@@ -1,6 +1,7 @@
 #include "TestPlugin/PluginProcessor.h"
 #include "TestPlugin/PluginEditor.h"
 #include "TestPlugin/Sinewave.h"
+#include "TestPlugin/Squarewave.h"
 
 #include <ranges>
 
@@ -89,7 +90,7 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate,
   // initialisation that you need..
   juce::ignoreUnused(sampleRate, samplesPerBlock);
 
-  const int inputChannels{getTotalNumInputChannels()};
+  const size_t inputChannels{static_cast<size_t>(getTotalNumInputChannels())};
   const float sampleRateFl{static_cast<float>(sampleRate)};
 
   for (int i{}; i < m_WaveTypes.size(); ++i) {
@@ -103,13 +104,13 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate,
 
 std::vector<std::unique_ptr<Wave>> AudioPluginAudioProcessor::initWavesByName(
     const juce::String& name,
-    const int resizeNr,
+    const size_t resizeNr,
     const float sampleRate) {
   std::vector<std::unique_ptr<Wave>> waves{};
   waves.reserve(resizeNr);
 
   if (name == m_WaveTypes[0]) {
-    for (int i{}; i < resizeNr; ++i) {
+    for (size_t i{}; i < resizeNr; ++i) {
       auto wave{std::make_unique<Squarewave>()};
       wave->prepare(sampleRate);
       waves.emplace_back(std::move(wave));
@@ -118,7 +119,7 @@ std::vector<std::unique_ptr<Wave>> AudioPluginAudioProcessor::initWavesByName(
   }
 
   if (name == m_WaveTypes[1]) {
-    for (int i{}; i < resizeNr; ++i) {
+    for (size_t i{}; i < resizeNr; ++i) {
       auto wave{std::make_unique<Sinewave>()};
       wave->prepare(sampleRate);
       waves.emplace_back(std::move(wave));
@@ -183,7 +184,7 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
   for (auto& waves : m_Waves | std::views::values) {
     for (int channel{}; channel < bufferChannels; ++channel) {
       float* output = buffer.getWritePointer(channel);
-      waves[channel]->process(output, bufferSamples);
+      waves[static_cast<size_t>(channel)]->process(output, bufferSamples);
     }
   }
 
