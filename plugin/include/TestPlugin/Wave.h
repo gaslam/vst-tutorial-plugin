@@ -22,7 +22,7 @@ class Wave {
 
   void setAmplitude(const float amplitude) {
     m_SmoothedAmp.setTargetValue(amplitude);
-  };
+  }
   void setFrequency(const float frequency) {m_SmoothedFreq.setTargetValue( frequency);}
 
   virtual void prepare(float sampleRate) {
@@ -32,7 +32,7 @@ class Wave {
     m_SmoothedAmp.reset(sampleRateDbl,0.1);
     m_SmoothedFreq.setCurrentAndTargetValue(0.4f);
     m_CurrentSampleRate = sampleRate;
-  };
+  }
   virtual void process(float* output,const int numSamples) = 0;
 
   protected:

@@ -41,7 +41,7 @@ public:
   void parameterChanged(const juce::String& id, float newValue) override;
 
   [[nodiscard]] juce::AudioProcessorValueTreeState& getState() {return m_State;}
-  bool IsPlaying() const {return m_IsPlaying;};
+  bool IsPlaying() const {return m_IsPlaying;}
 
 private:
   juce::StringArray m_WaveTypes{"Square","Sine"};
