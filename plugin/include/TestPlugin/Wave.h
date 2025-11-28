@@ -16,7 +16,7 @@ class Wave {
   Wave(Wave&&) = delete;
   Wave& operator=(Wave&&) = delete;
 
-  [[nodiscard]] float getAmplitude() const {return m_SmoothedAmp.getCurrentValue();};
+  [[nodiscard]] float getAmplitude() const {return m_SmoothedAmp.getCurrentValue();}
   [[nodiscard]] float getFrequency() const {return m_SmoothedFreq.getCurrentValue();}
   [[nodiscard]] float getSampleRate() const {return m_CurrentSampleRate;}
 
@@ -26,9 +26,10 @@ class Wave {
   void setFrequency(const float frequency) {m_SmoothedFreq.setTargetValue( frequency);}
 
   virtual void prepare(float sampleRate) {
-    m_SmoothedFreq.reset(sampleRate,0.1f);
+    const double sampleRateDbl{static_cast<double>(sampleRate)};
+    m_SmoothedFreq.reset(sampleRateDbl,0.1f);
     m_SmoothedFreq.setCurrentAndTargetValue(220.f);
-    m_SmoothedAmp.reset(sampleRate,0.1f);
+    m_SmoothedAmp.reset(sampleRateDbl,0.1f);
     m_SmoothedFreq.setCurrentAndTargetValue(0.4f);
     m_CurrentSampleRate = sampleRate;
   };
