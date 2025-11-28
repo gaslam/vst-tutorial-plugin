@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SQUARE_H
+#define SQUARE_H
 
 #include <juce_gui_basics/juce_gui_basics.h>
 class Square : public juce::Component {
@@ -8,3 +9,4 @@ public:
 
 private:
 };
+#endif

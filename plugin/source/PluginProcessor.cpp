@@ -1,5 +1,9 @@
 #include "TestPlugin/PluginProcessor.h"
 #include "TestPlugin/PluginEditor.h"
+#include "TestPlugin/Sinewave.h"
+#include "TestPlugin/Squarewave.h"
+
+#include <ranges>
 
 namespace audio_plugin {
 AudioPluginAudioProcessor::AudioPluginAudioProcessor()
@@ -11,10 +15,18 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
 #endif
               .withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-      ) {
+              ),
+      m_State(*this, nullptr, "parameters", createParameters()) {
+  m_State.addParameterListener("play", this);
+  m_State.addParameterListener("freqHz", this);
+  m_State.addParameterListener("waveSelect", this);
 }
 
-AudioPluginAudioProcessor::~AudioPluginAudioProcessor() {}
+AudioPluginAudioProcessor::~AudioPluginAudioProcessor() {
+  m_State.removeParameterListener("freqHz", this);
+  m_State.removeParameterListener("play", this);
+  m_State.removeParameterListener("waveSelect", this);
+}
 
 const juce::String AudioPluginAudioProcessor::getName() const {
   return JucePlugin_Name;
@@ -77,6 +89,44 @@ void AudioPluginAudioProcessor::prepareToPlay(double sampleRate,
   // Use this method as the place to do any pre-playback
   // initialisation that you need..
   juce::ignoreUnused(sampleRate, samplesPerBlock);
+
+  const size_t inputChannels{static_cast<size_t>(getTotalNumInputChannels())};
+  const float sampleRateFl{static_cast<float>(sampleRate)};
+
+  for (int i{}; i < m_WaveTypes.size(); ++i) {
+    m_Waves.emplace(i,
+                    initWavesByName(m_WaveTypes[i], inputChannels, sampleRateFl));
+  }
+  if (m_Waves.size() > 0) {
+    m_SelectedWave = 0;
+  }
+}
+
+std::vector<std::unique_ptr<Wave>> AudioPluginAudioProcessor::initWavesByName(
+    const juce::String& name,
+    const size_t resizeNr,
+    const float sampleRate) {
+  std::vector<std::unique_ptr<Wave>> waves{};
+  waves.reserve(resizeNr);
+
+  if (name == m_WaveTypes[0]) {
+    for (size_t i{}; i < resizeNr; ++i) {
+      auto wave{std::make_unique<Squarewave>()};
+      wave->prepare(sampleRate);
+      waves.emplace_back(std::move(wave));
+    }
+    return waves;
+  }
+
+  if (name == m_WaveTypes[1]) {
+    for (size_t i{}; i < resizeNr; ++i) {
+      auto wave{std::make_unique<Sinewave>()};
+      wave->prepare(sampleRate);
+      waves.emplace_back(std::move(wave));
+    }
+    return waves;
+  }
+  return waves;
 }
 
 void AudioPluginAudioProcessor::releaseResources() {
@@ -112,9 +162,15 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                                              juce::MidiBuffer& midiMessages) {
   juce::ignoreUnused(midiMessages);
 
+  if (!m_IsPlaying || m_SelectedWave == -1) {
+    return;
+  }
+
   juce::ScopedNoDenormals noDenormals;
   auto totalNumInputChannels = getTotalNumInputChannels();
   auto totalNumOutputChannels = getTotalNumOutputChannels();
+  const int bufferChannels = buffer.getNumChannels();
+  const int bufferSamples = buffer.getNumSamples();
 
   // In case we have more outputs than inputs, this code clears any output
   // channels that didn't contain input data, (because these aren't
@@ -124,6 +180,13 @@ void AudioPluginAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
   // this code if your algorithm always overwrites all the output channels.
   for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
     buffer.clear(i, 0, buffer.getNumSamples());
+
+  for (auto& waves : m_Waves | std::views::values) {
+    for (int channel{}; channel < bufferChannels; ++channel) {
+      float* output = buffer.getWritePointer(channel);
+      waves[static_cast<size_t>(channel)]->process(output, bufferSamples);
+    }
+  }
 
   // This is the place where you'd normally do the guts of your plugin's
   // audio processing...
@@ -161,10 +224,56 @@ void AudioPluginAudioProcessor::setStateInformation(const void* data,
   // call.
   juce::ignoreUnused(data, sizeInBytes);
 }
+juce::AudioProcessorValueTreeState::ParameterLayout
+AudioPluginAudioProcessor::createParameters() {
+  return {std::make_unique<juce::AudioParameterFloat>(
+              juce::ParameterID{"freqHz"}, "Frequency", 20.f, 2000.f, 220.f),
+          std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"play"},
+                                                     "Play", true),
+          std::make_unique<juce::AudioParameterChoice>(
+              juce::ParameterID{"waveSelect"}, "WaveSelect",
+              m_WaveTypes, 0)};
+}
 }  // namespace audio_plugin
 
 // This creates new instances of the plugin.
 // This function definition must be in the global namespace.
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() {
   return new audio_plugin::AudioPluginAudioProcessor();
+}
+
+void audio_plugin::AudioPluginAudioProcessor::parameterChanged(
+    const juce::String& id,
+    float newValue) {
+  if (id == "play") {
+    const float newFreq = 0.4f * newValue;
+
+    for (auto& wave : m_Waves[m_SelectedWave]) {
+      wave->setAmplitude(newFreq);
+    }
+
+    m_IsPlaying = !m_IsPlaying;
+  }
+
+  if (id == "freqHz") {
+    for (auto& wave : m_Waves[m_SelectedWave]) {
+      wave->setFrequency(newValue);
+    }
+  }
+
+  if (id == "waveSelect") {
+    const int idx{static_cast<int>(newValue)};
+    const float amplitude{0.4f * m_State.getRawParameterValue("play")->load()};
+    const float freq{m_State.getRawParameterValue("freqHz")->load()};
+    constexpr float zeroVolume{};
+    for (auto& wave : m_Waves[m_SelectedWave]) {
+      wave->setAmplitude(zeroVolume);
+    }
+
+    m_SelectedWave = idx;
+    for (auto& wave : m_Waves[m_SelectedWave]) {
+      wave->setFrequency(freq);
+      wave->setAmplitude(amplitude);
+    }
+  }
 }
