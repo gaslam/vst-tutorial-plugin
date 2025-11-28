@@ -44,7 +44,8 @@ set(HEADER_FILES
         ${INCLUDE_DIR}/PluginProcessor.h
         ${INCLUDE_DIR}/Square.h
         ${INCLUDE_DIR}/Sinewave.h
-        ${INCLUDE_DIR}/Squarewave.h)
+        ${INCLUDE_DIR}/Squarewave.h
+        ${INCLUDE_DIR}/Wave.h)
 target_sources(${PROJECT_NAME} PRIVATE ${SOURCE_FILES} ${HEADER_FILES})
 
 # Sets the include directories of the plugin project.

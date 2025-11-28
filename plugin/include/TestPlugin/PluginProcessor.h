@@ -1,8 +1,9 @@
 #pragma once
 
-#include "TestPlugin/Sinewave.h"
+#include "TestPlugin/Squarewave.h"
 
 #include <juce_audio_processors/juce_audio_processors.h>
+#include <map>
 
 namespace audio_plugin {
 class AudioPluginAudioProcessor : public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener {
@@ -43,12 +44,14 @@ public:
   bool IsPlaying() const {return m_IsPlaying;};
 
 private:
-
-  std::vector<Sinewave> m_Squarewaves{};
+  juce::StringArray m_WaveTypes{"Square","Sine"};
+  std::map<int,std::vector<std::unique_ptr<Wave>>> m_Waves{};
+  int m_SelectedWave{-1};
   juce::AudioProcessorValueTreeState m_State;
   bool m_IsPlaying = true;
 
   juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
+  std::vector<std::unique_ptr<Wave>> initWavesByName(const juce::String& name,const int resizeNr, const float sampleRate) ;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioPluginAudioProcessor)
 };
