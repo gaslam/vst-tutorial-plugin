@@ -27,9 +27,9 @@ class Wave {
 
   virtual void prepare(float sampleRate) {
     const double sampleRateDbl{static_cast<double>(sampleRate)};
-    m_SmoothedFreq.reset(sampleRateDbl,0.1f);
+    m_SmoothedFreq.reset(sampleRateDbl,0.1);
     m_SmoothedFreq.setCurrentAndTargetValue(220.f);
-    m_SmoothedAmp.reset(sampleRateDbl,0.1f);
+    m_SmoothedAmp.reset(sampleRateDbl,0.1);
     m_SmoothedFreq.setCurrentAndTargetValue(0.4f);
     m_CurrentSampleRate = sampleRate;
   };
